@@ -18,20 +18,12 @@ class AddEmail(ListInfoForm):
     def __init__(self, context, request):
         ListInfoForm.__init__(self, context, request)
 
-    def addr_from_email(self, emailMessage):
-        parser = Parser()
-        msgHdrs = parser.parsestr(emailMessage, headersonly=True)
-        # A special header that is added by Postfix.
-        retval = msgHdrs['x-original-to'] 
-        assert retval, 'No x-original-to address'
-        return retval
-
     @form.action(label=u'Add', failure='handle_add_action_failure')
     def handle_add(self, action, data):
         msg = data['emailMessage'].encode('utf-8')
-        toAddr = self.addr_from_email(msg)
-        adder = Adder(self.context, self.request,
-                      self.get_site_id(toAddr), self.get_group_id(toAddr))
+        # Note the site ID
+        adder = Adder(self.context, self.request, self.siteInfo.id, 
+                      data['groupId'])
         adder.add(msg)
         self.status = u'Done'
 
