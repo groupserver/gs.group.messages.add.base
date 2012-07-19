@@ -10,6 +10,7 @@ from zExceptions import BadRequest
 from gs.group.member.canpost.interfaces import IGSPostingUser
 from gs.profile.notify.adressee import Addressee
 from Products.XWFMailingListManager.queries import MessageQuery
+from gs.email import send_email
 
 from logging import getLogger
 log = getLogger('addapost')
@@ -145,9 +146,7 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
             #   subsystem.
             mailto = curr_list.getValueFor('mailto')
             try:
-                listManager.MailHost._send(mfrom=email,
-                                           mto=mailto,
-                                           messageText=msg.as_string())
+                send_email(email, mailto, msg.as_string())
             except BadRequest, e:
                 result['error'] = True
                 result['message'] = errorM
