@@ -5,9 +5,9 @@ from version import get_version
 
 version = get_version()
 
-setup(name='gs.group.messages.add',
+setup(name='gs.group.messages.add.base',
     version=version,
-    description="Add a message to a GroupServer group",
+    description="The core code for ading a message to a GroupServer group",
     long_description=open("README.txt").read() + "\n" +
                       open(os.path.join("docs", "HISTORY.txt")).read(),
     classifiers=[
@@ -27,7 +27,8 @@ setup(name='gs.group.messages.add',
     url='http://groupserver.org/',
     license='other',
     packages=find_packages(exclude=['ez_setup']),
-    namespace_packages=['gs', 'gs.group', 'gs.group.messages'],
+    namespace_packages=['gs', 'gs.group', 'gs.group.messages', 
+                        'gs.group.messages.add'],
     include_package_data=True,
     zip_safe=True,
     install_requires=[
@@ -36,7 +37,6 @@ setup(name='gs.group.messages.add',
         'Products.XWFMailingListManager', # For the mailing list
         # -*- Extra requirements: -*-
     ],
-    entry_points="""
-    # -*- Entry points: -*-
-    """,)
-
+    entry_points={
+    },
+)
