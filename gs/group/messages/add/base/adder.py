@@ -28,6 +28,6 @@ class Adder(object):
         r = self.request.clone()
         r.form[MAIL_PARAMETER_NAME] = message
         retval = self.list.manage_mailboxer(r)
-        assert retval
+        assert retval, 'No post ID returned.'
         assert type(retval) in (unicode, str)
         return retval
