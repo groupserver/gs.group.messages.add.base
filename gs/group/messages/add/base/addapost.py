@@ -9,7 +9,8 @@ from zope.component import createObject, getMultiAdapter
 from zExceptions import BadRequest
 from gs.group.member.canpost.interfaces import IGSPostingUser
 from gs.profile.notify.adressee import Addressee
-from adder import Adder
+from Products.XWFMailingListManager.queries import MessageQuery
+from gs.email import send_email
 
 from logging import getLogger
 log = getLogger('addapost')
@@ -70,7 +71,6 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
     #audit = WebPostAuditor(groupObj)
     #audit.info(POST, topic)
     # Step 1, check if the user can post
-    # TODO: Move this up and out
     userPostingInfo = getMultiAdapter((groupObj, userInfo), 
                                        IGSPostingUser)
     if not userPostingInfo.canPost:
@@ -146,9 +146,7 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
             #   subsystem.
             mailto = curr_list.getValueFor('mailto')
             try:
-                listManager.MailHost._send(mfrom=email,
-                                           mto=mailto,
-                                           messageText=msg.as_string())
+                send_email(email, mailto, msg.as_string())
             except BadRequest, e:
                 result['error'] = True
                 result['message'] = errorM
@@ -162,8 +160,8 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
             # Send the message directly to the mailing list because
             #   it is not moderated
             try:
-                adder = Adder(context, request, siteId, groupId)
-                r = adder.add(msg.as_string())
+                request = {'Mail': msg.as_string()}
+                r = groupList.manage_listboxer(request)
                 result['message'] = \
                   u'<a href="/r/topic/%s#post-%s">Message '\
                   u'posted.</a>' % (r, r)
@@ -191,3 +189,4 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
                 result['message'] = errorM
                 break
     return result
+
