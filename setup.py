@@ -33,9 +33,13 @@ setup(name='gs.group.messages.add.base',
     zip_safe=True,
     install_requires=[
         'setuptools',
+        'zope.cachedescriptors',
+        'zope.component',
+        'zope.interface',
         'gs.auth.token',
+        'Products.GSAuditTrail',
         'Products.XWFMailingListManager', # For the mailing list
-        # -*- Extra requirements: -*-
+        'Products.XWFCore',
     ],
     entry_points={
     },

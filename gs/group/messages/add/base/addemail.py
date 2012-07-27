@@ -1,11 +1,12 @@
 # coding=utf-8
 from email.parser import Parser
-from zope.component import createObject
 from zope.cachedescriptors.property import Lazy
+from zope.component import createObject
 from zope.formlib import form
 from Products.Five.browser.pagetemplatefile import ZopeTwoPageTemplateFile
 from gs.auth.token import log_auth_error
 from adder import Adder
+from audit import AddAuditor, ADD_EMAIL
 from base import ListInfoForm
 from interfaces import IGSAddEmail
 
@@ -21,6 +22,10 @@ class AddEmail(ListInfoForm):
     @form.action(label=u'Add', failure='handle_add_action_failure')
     def handle_add(self, action, data):
         msg = data['emailMessage'].encode('utf-8')
+        # Audit
+        auditor = AddAuditor(self.context)
+        length = '%d bytes' % len(data['emailMessage'])
+        auditor.info(ADD_EMAIL, length, data['groupId'])
         # Note the site ID
         adder = Adder(self.context, self.request, self.siteInfo.id, 
                       data['groupId'])
