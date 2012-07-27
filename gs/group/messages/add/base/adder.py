@@ -24,7 +24,6 @@ class Adder(object):
         return retval
 
     def add(self, message):
-        # TODO: audit
         self.request.form[MAIL_PARAMETER_NAME] = message
         retval = self.list.manage_mailboxer(self.request)
         assert retval, 'No post ID returned.'
