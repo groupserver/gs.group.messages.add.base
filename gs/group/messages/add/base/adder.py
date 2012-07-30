@@ -3,6 +3,9 @@ from zope.cachedescriptors.property import Lazy
 from zope.publisher.base import TestRequest
 from Products.XWFMailingListManager.utils import MAIL_PARAMETER_NAME
 
+from logging import getLogger
+log = getLogger('addapost')
+
 class Adder(object):
     def __init__(self, context, request, siteId, groupId):
         assert context, 'No context'
@@ -28,6 +31,8 @@ class Adder(object):
         # munge the message into the request. This is priority to remove!
         self.request.form[MAIL_PARAMETER_NAME] = message
         retval = self.list.manage_mailboxer(self.request)
-        assert retval, 'No post ID returned.'
+        #assert retval, 'No post ID returned.'
+        if not retval:
+            log.warn("No post ID returned. This might be normal, or it might be a problem if the poster did not exist.")
         assert type(retval) in (unicode, str)
         return retval
