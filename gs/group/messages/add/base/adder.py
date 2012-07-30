@@ -34,5 +34,6 @@ class Adder(object):
         #assert retval, 'No post ID returned.'
         if not retval:
             log.warn("No post ID returned. This might be normal, or it might be a problem if the poster did not exist.")
-        assert type(retval) in (unicode, str)
+        else:
+            assert type(retval) in (unicode, str)
         return retval
