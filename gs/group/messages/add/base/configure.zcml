@@ -6,12 +6,12 @@
     for="Products.GSContent.interfaces.IGSSiteFolder"
     name="gs-group-messages-add-group-exists.html"
     class=".groupexists.GroupExists"
-    permission="zope2.View"/>
+    permission="zope2.Public"/>
 
   <browser:page 
     for="Products.GSContent.interfaces.IGSSiteFolder"
     name="gs-group-messages-add-email.html"
     class=".addemail.AddEmail"
-    permission="zope2.View"/>
+    permission="zope2.Public"/>
 
 </configure>
