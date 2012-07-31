@@ -9,6 +9,7 @@ from adder import Adder
 from audit import AddAuditor, ADD_EMAIL
 from base import ListInfoForm
 from interfaces import IGSAddEmail
+import base64
 
 class AddEmail(ListInfoForm):
     label = u'Add an email'
@@ -21,7 +22,14 @@ class AddEmail(ListInfoForm):
 
     @form.action(label=u'Add', failure='handle_add_action_failure')
     def handle_add(self, action, data):
-        msg = data['emailMessage'].encode('utf-8')
+        try:
+            msg = base64.b64decode(data['emailMessage'])
+        except TypeError:
+            # wasn't base64 encoded. Try and proceed anyway!
+            msg = data['emailMessage']
+        
+        msg = msg.encode('utf-8')
+        
         # Audit
         auditor = AddAuditor(self.context)
         length = '%d bytes' % len(data['emailMessage'])
