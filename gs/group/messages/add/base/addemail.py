@@ -28,8 +28,6 @@ class AddEmail(ListInfoForm):
             # wasn't base64 encoded. Try and proceed anyway!
             msg = data['emailMessage']
         
-        msg = msg.encode('utf-8')
-        
         # Audit
         auditor = AddAuditor(self.context)
         length = '%d bytes' % len(data['emailMessage'])
