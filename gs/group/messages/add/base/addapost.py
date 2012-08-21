@@ -10,6 +10,7 @@ from zExceptions import BadRequest
 from gs.group.member.canpost.interfaces import IGSPostingUser
 from gs.profile.notify.adressee import Addressee
 from Products.XWFMailingListManager.queries import MessageQuery
+from Products.XWFMailingListManager.emailmessage import DuplicateMessageError
 from gs.email import send_email
 
 from logging import getLogger
@@ -165,23 +166,14 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
                 result['message'] = \
                   u'<a href="/r/topic/%s#post-%s">Message '\
                   u'posted.</a>' % (r, r)
-                # --=mpj17=-- The reason that I rewrite the result,
-                # rather than doing a redirect, is the database may
-                # not contain the post yet, so we have nowhere to
-                # redirect to. The few seconds it will take the user
-                # to click on the link should be fine: a race 
-                # condition :)
             except BadRequest, e:
                 result['error'] = True
                 result['message'] = errorM
                 log.error(e.encode('ascii', 'ignore'))
                 break
-            except SQLAlchemyError, e:
+            except DuplicateMessageError, e:
                 result['error'] = True
                 result['message'] = errorM
-                m = e.statement % e.params
-                m = u'%s: %s' % (e.orig, m)
-                log.error(m.encode('ascii', 'ignore'))
                 break
             if (not r):
                 # --=mpj17=-- This could be lies.
