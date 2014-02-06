@@ -1,34 +1,43 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+# Copyright © 2014 OnlineGroups.net and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
+from __future__ import unicode_literals
 from email.Encoders import encode_base64
 from email.MIMENonMultipart import MIMENonMultipart
 from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText 
-from mimetypes import MimeTypes
-from sqlalchemy.exc import SQLAlchemyError
+from email.MIMEText import MIMEText
+from logging import getLogger
+log = getLogger('addapost')
 from zope.component import createObject, getMultiAdapter
 from zExceptions import BadRequest
 from gs.group.member.canpost.interfaces import IGSPostingUser
 from gs.profile.notify.adressee import Addressee
-from Products.XWFMailingListManager.queries import MessageQuery
 from Products.XWFMailingListManager.emailmessage import DuplicateMessageError
 from gs.email import send_email
+from Products.XWFCore.XWFUtils import removePathsFromFilenames
 
-from logging import getLogger
-log = getLogger('addapost')
-#from webpostaudit import WebPostAuditor, POST
 
-from Products.XWFCore.XWFUtils import getOption, \
-  removePathsFromFilenames
 def tagProcess(tagsString):
     # --=mpj17=-- Not the most elegant function, but I did not want to
     #   use the regular-expression library.
-    retval = []
+    r = []
 
     if len(tagsString) == 0:
-        return retval
-        
+        return r
+
     if ',' in tagsString:
-        retval = tagsString.split(',')
+        r = tagsString.split(',')
     else:
         tags = tagsString
         if (('"' in tags) and (tags.count('"') % 2 == 0)):
@@ -47,17 +56,19 @@ def tagProcess(tagsString):
 
         tagsList = tags.split(' ')
         for tag in tagsList:
-            retval.append(tag.replace('_', ' '))
-    
-    return map(lambda t: t.strip(), filter(lambda t: t!='', retval))
+            r.append(tag.replace('_', ' '))
+
+    retval = [t.strip() for t in [u for u in r if u != '']]
+    return retval
+
 
 def add_a_post(groupId, siteId, replyToId, topic, message,
                tags, email, uploadedFiles, context, request):
-    
+
     result = {
-      'error': False,
-      'message': u"Message posted.",
-      'id': u''}
+        'error': False,
+        'message': "Message posted.",
+        'id': ''}
     site_root = context.site_root()
     assert site_root
     userInfo = createObject('groupserver.LoggedInUser', context)
@@ -72,7 +83,7 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
     #audit = WebPostAuditor(groupObj)
     #audit.info(POST, topic)
     # Step 1, check if the user can post
-    userPostingInfo = getMultiAdapter((groupObj, userInfo), 
+    userPostingInfo = getMultiAdapter((groupObj, userInfo),
                                        IGSPostingUser)
     if not userPostingInfo.canPost:
         raise 'Forbidden', userPostingInfo.status
@@ -84,7 +95,7 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
     message = message.encode('utf-8')
     if uploadedFiles:
         msg = MIMEMultipart()
-        msgBody = MIMEText(message, 'plain', 'utf-8') # As God intended.
+        msgBody = MIMEText(message, 'plain', 'utf-8')  # As God intended.
         msg.attach(msgBody)
     else:
         msg = MIMEText(message, 'plain', 'utf-8')
@@ -92,8 +103,8 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
     # msg['To'] set below
     # TODO: Add the user's name. The Header class will be needed
     #   to ensure it is escaped properly.
-    msg['From'] = str(Addressee(userInfo, email))
-    msg['Subject'] = topic # --=mpj17=-- This does not need encoding.
+    msg['From'] = unicode(Addressee(userInfo, email)).encode('ascii', 'ignore')
+    msg['Subject'] = topic  # --=mpj17=-- This does not need encoding.
     tagsList = tagProcess(tags)
     tagsString = ', '.join(tagsList)
     if tagsString:
@@ -108,18 +119,18 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
         f.seek(0)
         data = f.read()
         if data:
-            t = f.headers.getheader('Content-Type', 
+            t = f.headers.getheader('Content-Type',
                                     'application/octet-stream')
             mimePart = MIMENonMultipart(*t.split('/'))
             mimePart.set_payload(data)
             mimePart['Content-Disposition'] = 'attachment'
             filename = removePathsFromFilenames(f.filename)
-            mimePart.set_param('filename', filename, 
-                               'Content-Disposition')              
-            encode_base64(mimePart) # Solves a lot of problems.
+            mimePart.set_param('filename', filename,
+                               'Content-Disposition')
+            encode_base64(mimePart)  # Solves a lot of problems.
             msg.attach(mimePart)
-    # Step 3, check the moderation. 
-    # --=mpj17=-- This changes *how* we send the message to the 
+    # Step 3, check the moderation.
+    # --=mpj17=-- This changes *how* we send the message to the
     #   mailing list. No, really.
     via_mailserver = False
     moderatedlist = groupList.get_moderatedUserObjects(ids_only=True)
@@ -127,16 +138,16 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
     # --=rrw=--if we are moderated _and_ we have a moderatedlist, only
     # users in the moderated list are moderated
     if moderated and moderatedlist and (userInfo.id in moderatedlist):
-        log.warn('User "%s" posted from web while moderated' % 
+        log.warn('User "%s" posted from web while moderated' %
               userInfo.id)
         via_mailserver = True
     # --=rrw=-- otherwise if we are moderated, everyone is moderated
     elif moderated and not(moderatedlist):
         log.warn('User "%s" posted from web while moderated' % userInfo.id)
         via_mailserver = True
-    errorM = u'The post was not added to the topic '\
-      u'<code class="topic">%s</code> because a post with the same '\
-      u'body already exists in the topic.' % topic
+    errorM = 'The post was not added to the topic '\
+      '<code class="topic">%s</code> because a post with the same '\
+      'body already exists in the topic.' % topic
     # Step 4, send the message.
     for list_id in messages.getProperty('xwf_mailing_list_ids', []):
         curr_list = listManager.get_list(list_id)
@@ -148,14 +159,14 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
             mailto = curr_list.getValueFor('mailto')
             try:
                 send_email(email, mailto, msg.as_string())
-            except BadRequest, e:
+            except BadRequest as e:
                 result['error'] = True
                 result['message'] = errorM
                 log.error(e.encode('ascii', 'ignore'))
                 break
             result['error'] = True
-            result['message'] = u'Your message has been sent to '\
-              'the moderators for approval.'
+            result['message'] = 'Your message has been sent to  the '\
+                                'moderators for approval.'
             break
         else:
             # Send the message directly to the mailing list because
@@ -164,14 +175,14 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
                 request = {'Mail': msg.as_string()}
                 r = groupList.manage_listboxer(request)
                 result['message'] = \
-                  u'<a href="/r/topic/%s#post-%s">Message '\
-                  u'posted.</a>' % (r, r)
-            except BadRequest, e:
+                  '<a href="/r/topic/%s#post-%s">Message '\
+                  'posted.</a>' % (r, r)
+            except BadRequest as e:
                 result['error'] = True
                 result['message'] = errorM
                 log.error(e.encode('ascii', 'ignore'))
                 break
-            except DuplicateMessageError, e:
+            except DuplicateMessageError as e:
                 result['error'] = True
                 result['message'] = errorM
                 break
@@ -181,4 +192,3 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
                 result['message'] = errorM
                 break
     return result
-

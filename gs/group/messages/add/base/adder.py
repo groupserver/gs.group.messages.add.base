@@ -1,10 +1,22 @@
-# coding=utf-8
-from zope.cachedescriptors.property import Lazy
-from zope.publisher.base import TestRequest
-from Products.XWFMailingListManager.utils import MAIL_PARAMETER_NAME
-
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+# Copyright © 2014 OnlineGroups.net and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
 from logging import getLogger
 log = getLogger('gs.group.messages.add.base.Adder')
+from zope.cachedescriptors.property import Lazy
+from Products.XWFMailingListManager.utils import MAIL_PARAMETER_NAME
+
 
 class Adder(object):
     def __init__(self, context, request, siteId, groupId):
@@ -16,7 +28,7 @@ class Adder(object):
         self.siteId = siteId
         assert groupId, 'No groupId'
         self.groupId = groupId
-    
+
     @Lazy
     def list(self):
         listManager = self.context.ListManager
@@ -31,7 +43,9 @@ class Adder(object):
         self.request.form[MAIL_PARAMETER_NAME] = message
         retval = self.list.manage_mailboxer(self.request)
         if not retval:
-            log.warn("No post ID returned. This might be normal, or it might be a problem if the poster did not exist.")
+            m = 'No post ID returned. This might be normal, or it might be a '\
+                'problem if the poster did not exist.'
+            log.warn(m)
         else:
             assert type(retval) in (unicode, str)
         return retval

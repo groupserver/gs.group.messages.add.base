@@ -1,6 +1,20 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+# Copyright © 2014 OnlineGroups.net and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
 from zope.cachedescriptors.property import Lazy
-from gs.content.form.form import SiteForm
+from gs.content.form import SiteForm
+
 
 class ListInfoForm(SiteForm):
     def __init__(self, context, request):
@@ -19,7 +33,7 @@ class ListInfoForm(SiteForm):
         if emailAddr not in self.map:
             try:
                 l = self.mailingListManager.get_listFromMailto(emailAddr)
-            except AttributeError, ae:
+            except AttributeError:
                 self.map[emailAddr] = (None, None)
             else:
                 self.map[emailAddr] = (l.getProperty('siteId'), l.getId())

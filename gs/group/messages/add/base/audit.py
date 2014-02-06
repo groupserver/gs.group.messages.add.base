@@ -1,4 +1,18 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+# Copyright © 2014 OnlineGroups.net and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
+from __future__ import unicode_literals
 from pytz import UTC
 from datetime import datetime
 from zope.cachedescriptors.property import Lazy
@@ -11,67 +25,69 @@ from Products.GSAuditTrail.utils import event_id_from_data
 
 SUBSYSTEM = 'gs.group.messages.add'
 import logging
-log = logging.getLogger(SUBSYSTEM) #@UndefinedVariable
+log = logging.getLogger(SUBSYSTEM)
 
-UNKNOWN        = '0'  # Unknown is always "0"
-ADD_EMAIL      = '1'
+UNKNOWN = '0'  # Unknown is always "0"
+ADD_EMAIL = '1'
+
 
 class AddEmailAuditEventFactory(object):
     """A Factory for add-email events."""
     implements(IFactory)
 
-    title=u'GroupServer Add-Email Event Factory'
-    description=u'Creates a GroupServer event auditor for add-email events'
+    title = 'GroupServer Add-Email Event Factory'
+    description = 'Creates a GroupServer event auditor for add-email events'
 
     def __call__(self, context, event_id, code, date,
         userInfo, instanceUserInfo, siteInfo, groupInfo,
         instanceDatum='', supplementaryDatum='', subsystem=''):
         """Create an event"""
         assert subsystem == SUBSYSTEM, 'Subsystems do not match'
-        
+
         if code == ADD_EMAIL:
             event = AddEvent(context, event_id, date, siteInfo,
                              instanceDatum, supplementaryDatum)
         else:
-            event = BasicAuditEvent(context, event_id, UNKNOWN, date, 
-              userInfo, instanceUserInfo, siteInfo, groupInfo, 
+            event = BasicAuditEvent(context, event_id, UNKNOWN, date,
+              userInfo, instanceUserInfo, siteInfo, groupInfo,
               instanceDatum, supplementaryDatum, SUBSYSTEM)
         assert event
         return event
-    
+
     def getInterfaces(self):
         return implementedBy(BasicAuditEvent)
-  
+
+
 class AddEvent(BasicAuditEvent):
-    ''' An audit-trail event representing an email being added to a list.
-    '''
+    ''' An audit-trail event representing an email being added to a list.'''
     implements(IAuditEvent)
 
-    def __init__(self, context, id, d, siteInfo, instanceDatum, 
+    def __init__(self, context, id, d, siteInfo, instanceDatum,
                  supplementaryDatum):
         """ Create an event"""
-        BasicAuditEvent.__init__(self, context, id,  ADD_EMAIL, d, None,
+        BasicAuditEvent.__init__(self, context, id, ADD_EMAIL, d, None,
           None, siteInfo, None, instanceDatum, supplementaryDatum, SUBSYSTEM)
-        
+
     def __unicode__(self):
-        retval = u'Email (%s) added to a list (%s) on %s (%s).' %\
+        retval = 'Email (%s) added to a list (%s) on %s (%s).' %\
             (self.instanceDatum, self.supplementaryDatum,
              self.siteInfo.name, self.siteInfo.id)
         return retval
-           
+
     def __str__(self):
         retval = unicode(self).encode('ascii', 'ignore')
         return retval
-    
+
     @property
     def xhtml(self):
-        cssClass = u'audit-event gs-group-messages-add-base-%s' % self.code
-        retval = u'<span class="%s">Added an email (%s) to %s.</span>'%\
+        cssClass = 'audit-event gs-group-messages-add-base-%s' % self.code
+        retval = '<span class="%s">Added an email (%s) to %s.</span>' % \
           (cssClass, self.instanceDaturm, self.supplementaryDatum)
-        
-        retval = u'%s (%s)' % \
+
+        retval = '%s (%s)' % \
           (retval, munge_date(self.context, self.date))
         return retval
+
 
 class AddAuditor(object):
     """An auditor for adding an email.
@@ -89,7 +105,7 @@ class AddAuditor(object):
     def factory(self):
         retval = AddEmailAuditEventFactory()
         return retval
-        
+
     @Lazy
     def queries(self):
         retval = AuditQuery()
@@ -102,14 +118,14 @@ class AddAuditor(object):
             * Writes the event to the standard Python log.
         """
         d = datetime.now(UTC)
-        eventId = event_id_from_data(self.siteInfo, self.siteInfo, 
-                                     self.siteInfo, code, instanceDatum, 
+        eventId = event_id_from_data(self.siteInfo, self.siteInfo,
+                                     self.siteInfo, code, instanceDatum,
                                      supplementaryDatum + SUBSYSTEM)
-            
-        e = self.factory(self.context, eventId,  code, d, None, None, 
-                         self.siteInfo, None, instanceDatum,  
+
+        e = self.factory(self.context, eventId, code, d, None, None,
+                         self.siteInfo, None, instanceDatum,
                          supplementaryDatum, SUBSYSTEM)
-        
+
         self.queries.store(e)
         log.info(e)
         return e
