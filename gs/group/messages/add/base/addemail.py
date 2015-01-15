@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+############################################################################
 #
 # Copyright © 2014 OnlineGroups.net and Contributors.
 # All Rights Reserved.
@@ -11,7 +11,7 @@
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
 # FOR A PARTICULAR PURPOSE.
 #
-##############################################################################
+############################################################################
 from __future__ import absolute_import, unicode_literals
 import base64
 from zope.formlib import form
@@ -56,4 +56,3 @@ class AddEmail(ListInfoForm):
             self.status = '<p>There is an error:</p>'
         else:
             self.status = '<p>There are errors:</p>'
-        assert type(self.status) == unicode

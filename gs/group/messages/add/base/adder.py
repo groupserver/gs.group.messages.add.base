@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+############################################################################
 #
 # Copyright © 2014 OnlineGroups.net and Contributors.
 # All Rights Reserved.
@@ -11,7 +11,8 @@
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
 # FOR A PARTICULAR PURPOSE.
 #
-##############################################################################
+############################################################################
+from __future__ import absolute_import, unicode_literals
 from logging import getLogger
 log = getLogger('gs.group.messages.add.base.Adder')
 from zope.cachedescriptors.property import Lazy
@@ -43,9 +44,7 @@ class Adder(object):
         self.request.form[MAIL_PARAMETER_NAME] = message
         retval = self.list.manage_mailboxer(self.request)
         if not retval:
-            m = 'No post ID returned. This might be normal, or it might be a '\
-                'problem if the poster did not exist.'
+            m = 'No post ID returned. This might be normal, or it might '\
+                'be a problem if the poster did not exist.'
             log.warn(m)
-        else:
-            assert type(retval) in (unicode, str)
         return retval
