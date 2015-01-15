@@ -65,6 +65,7 @@ setup(
         'gs.auth.token',
         'gs.content.form.base',
         'gs.email',
+        'gs.group.list.store',
         'gs.group.member.canpost',
         'gs.profile.notify',
         'Products.GSAuditTrail',
