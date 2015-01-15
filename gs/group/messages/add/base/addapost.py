@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+############################################################################
 #
 # Copyright © 2014 OnlineGroups.net and Contributors.
 # All Rights Reserved.
@@ -11,7 +11,7 @@
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
 # FOR A PARTICULAR PURPOSE.
 #
-##############################################################################
+############################################################################
 from __future__ import unicode_literals
 from email.Encoders import encode_base64
 from email.MIMENonMultipart import MIMENonMultipart
@@ -21,9 +21,9 @@ from logging import getLogger
 log = getLogger('addapost')
 from zope.component import createObject, getMultiAdapter
 from zExceptions import BadRequest
+from gs.group.list.store.queries import DuplicateMessageError
 from gs.group.member.canpost.interfaces import IGSPostingUser
 from gs.profile.notify.adressee import Addressee
-from Products.XWFMailingListManager.emailmessage import DuplicateMessageError
 from gs.email import send_email
 from Products.XWFCore.XWFUtils import removePathsFromFilenames
 
@@ -84,7 +84,7 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
     #audit.info(POST, topic)
     # Step 1, check if the user can post
     userPostingInfo = getMultiAdapter((groupObj, userInfo),
-                                       IGSPostingUser)
+                                      IGSPostingUser)
     if not userPostingInfo.canPost:
         raise 'Forbidden', userPostingInfo.status
     # --=mpj17-- Bless WebKit. It adds a file, even when no file has
@@ -103,7 +103,8 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
     # msg['To'] set below
     # TODO: Add the user's name. The Header class will be needed
     #   to ensure it is escaped properly.
-    msg['From'] = unicode(Addressee(userInfo, email)).encode('ascii', 'ignore')
+    msg['From'] = unicode(Addressee(userInfo, email)).encode('ascii',
+                                                             'ignore')
     msg['Subject'] = topic  # --=mpj17=-- This does not need encoding.
     tagsList = tagProcess(tags)
     tagsString = ', '.join(tagsList)
@@ -139,15 +140,15 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
     # users in the moderated list are moderated
     if moderated and moderatedlist and (userInfo.id in moderatedlist):
         log.warn('User "%s" posted from web while moderated' %
-              userInfo.id)
+                 userInfo.id)
         via_mailserver = True
     # --=rrw=-- otherwise if we are moderated, everyone is moderated
     elif moderated and not(moderatedlist):
         log.warn('User "%s" posted from web while moderated' % userInfo.id)
         via_mailserver = True
     errorM = 'The post was not added to the topic '\
-      '<code class="topic">%s</code> because a post with the same '\
-      'body already exists in the topic.' % topic
+        '<code class="topic">%s</code> because a post with the same '\
+        'body already exists in the topic.' % topic
     # Step 4, send the message.
     for list_id in messages.getProperty('xwf_mailing_list_ids', []):
         curr_list = listManager.get_list(list_id)
@@ -175,8 +176,8 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
                 request = {'Mail': msg.as_string()}
                 r = groupList.manage_listboxer(request)
                 result['message'] = \
-                  '<a href="/r/topic/%s#post-%s">Message '\
-                  'posted.</a>' % (r, r)
+                    '<a href="/r/topic/%s#post-%s">Message '\
+                    'posted.</a>' % (r, r)
             except BadRequest as e:
                 result['error'] = True
                 result['message'] = errorM
