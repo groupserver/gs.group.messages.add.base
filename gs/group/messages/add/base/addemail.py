@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ############################################################################
 #
-# Copyright © 2014 OnlineGroups.net and Contributors.
+# Copyright © 2014, 2015 OnlineGroups.net and Contributors.
 # All Rights Reserved.
 #
 # This software is subject to the provisions of the Zope Public License,
@@ -30,7 +30,7 @@ class AddEmail(ListInfoForm):
     form_fields = form.Fields(IGSAddEmail, render_context=False)
 
     def __init__(self, context, request):
-        ListInfoForm.__init__(self, context, request)
+        super(AddEmail, self).__init__(context, request)
 
     @form.action(label='Add', failure='handle_add_action_failure')
     def handle_add(self, action, data):
@@ -48,6 +48,9 @@ class AddEmail(ListInfoForm):
         adder = Adder(self.context, self.request, self.siteInfo.id,
                       data['groupId'])
         adder.add(msg)
+        # Because the text-version of the email message can mess with
+        # the content type
+        self.request.response.setHeader(b'Content-type', b'text/html')
         self.status = 'Done'
 
     def handle_add_action_failure(self, action, data, errors):

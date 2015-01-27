@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.1.1 (2015-01-27)
+------------------
+
+* Ensuring the content-type is ``text/html`` when returning from
+  the ``gs-group-messages-add-email.html`` form
+
 2.1.0 (2015-01-14)
 ------------------
 
