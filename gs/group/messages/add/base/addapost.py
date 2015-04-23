@@ -181,7 +181,7 @@ def add_a_post(groupId, siteId, replyToId, topic, message,
             except BadRequest as e:
                 result['error'] = True
                 result['message'] = errorM
-                log.error(e.encode('ascii', 'ignore'))
+                log.error(e)
                 break
             except DuplicateMessageError as e:
                 result['error'] = True
